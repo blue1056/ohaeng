@@ -326,11 +326,11 @@ const TRAIT_DESC = {
 };
 // 강하거나 부족한 기운이 실제로 어떤 영향을 주는지 풀어주는 문장
 const INFLUENCE = {
-  wood:  { many:'이 기운이 셀 땐 뭐든 적극적으로 밀어붙이고 새로운 일을 벌이는 추진력이 넘치지만, 너무 앞서 나가다 주변을 못 살피고 성급해질 수 있단다.', few:'느긋하고 안정적인 대신, 가끔은 새로운 걸 밀어붙이는 힘이나 유연하게 뻗어나가는 추진력이 아쉬울 때가 있을 거야.' },
-  fire:  { many:'이 기운이 셀 땐 열정과 표현력이 넘쳐서 뭐든 뜨겁게 몰입하지만, 너무 과하면 감정이 앞서 조급해지거나 쉽게 타올랐다 꺼질 수 있단다.', few:'차분하고 신중한 대신, 가끔은 무언가에 확 몰입하는 열정이나 감정을 표현하는 힘이 아쉬울 때가 있을 거야.' },
-  earth: { many:'이 기운이 셀 땐 웬만한 일엔 흔들리지 않는 묵직함이 있지만, 너무 과하면 고집이 세져서 융통성 없이 한 가지만 고수하게 될 수 있단다.', few:'유연하고 변화에 잘 적응하는 대신, 가끔은 중심을 딱 잡아주는 끈기나 안정감이 아쉬울 때가 있을 거야.' },
-  metal: { many:'이 기운이 셀 땐 판단이 예리하고 맺고 끊는 게 확실하지만, 너무 과하면 날카로움이 지나쳐 주변 사람들에게 차갑게 느껴질 수 있단다.', few:'부드럽고 포용력 있는 대신, 가끔은 딱 부러지게 정리하는 결단력이나 냉철함이 아쉬울 때가 있을 거야.' },
-  water: { many:'이 기운이 셀 땐 지혜롭고 융통성 있게 상황에 맞춰 흘러가지만, 너무 과하면 우유부단해지거나 생각이 너무 많아질 수 있단다.', few:'뚝심 있고 한결같은 대신, 가끔은 유연하게 상황에 맞춰가는 융통성이나 여유가 아쉬울 때가 있을 거야.' },
+  wood:  { many:'이 기운이 셀 땐 뭐든 적극적으로 밀어붙이고 새로운 일을 벌이는 추진력이 넘치지만, 너무 앞서 나가다 주변을 못 살피고 성급해질 수 있단다.', few:'느긋하고 안정적인 장점은 있지만, 가끔 새로운 걸 밀어붙이는 힘이나 유연하게 뻗어나가는 추진력이 없어 아쉬울 때가 있을 거야.' },
+  fire:  { many:'이 기운이 셀 땐 열정과 표현력이 넘쳐서 뭐든 뜨겁게 몰입하지만, 너무 과하면 감정이 앞서 조급해지거나 쉽게 타올랐다 꺼질 수 있단다.', few:'차분하고 신중한 장점은 있지만, 가끔 무언가에 확 몰입하는 열정이나 감정을 표현하는 힘이 없어 아쉬울 때가 있을 거야.' },
+  earth: { many:'이 기운이 셀 땐 웬만한 일엔 흔들리지 않는 묵직함이 있지만, 너무 과하면 고집이 세져서 융통성 없이 한 가지만 고수하게 될 수 있단다.', few:'유연하고 변화에 잘 적응하는 장점은 있지만, 가끔 중심을 딱 잡아주는 끈기나 안정감이 없어 아쉬울 때가 있을 거야.' },
+  metal: { many:'이 기운이 셀 땐 판단이 예리하고 맺고 끊는 게 확실하지만, 너무 과하면 날카로움이 지나쳐 주변 사람들에게 차갑게 느껴질 수 있단다.', few:'부드럽고 포용력 있는 장점은 있지만, 가끔 딱 부러지게 정리하는 결단력이나 냉철함이 없어 아쉬울 때가 있을 거야.' },
+  water: { many:'이 기운이 셀 땐 지혜롭고 융통성 있게 상황에 맞춰 흘러가지만, 너무 과하면 우유부단해지거나 생각이 너무 많아질 수 있단다.', few:'뚝심 있고 한결같은 장점은 있지만, 가끔 유연하게 상황에 맞춰가는 융통성이나 여유가 없어 아쉬울 때가 있을 거야.' },
 };
 // 필요한 오행(용신)이 실제로 어떤 변화를 가져다주는지 설명하는 문장
 // boost(생조): 이 오행이 일주를 채워주는 관계(인성/비겁)일 때 - "뿌리내림/자양분" 이미지
@@ -552,13 +552,14 @@ function findDrainReason(dm, fiveElements){
   return candidates[0].count = fiveElements[candidates[0].el], candidates[0];
 }
 // 일주를 도와주는 두 관계(비겁/인성) 중 개수가 가장 많은 걸 찾아 이유로 삼는다
-function findSupportReason(dm, fiveElements){
-  const candidates = [
-    { rel:'비겁', el: dm,               verb:'든든해서' },
-    { rel:'인성', el: generatorOf(dm),  verb:'채워져서' },
-  ];
-  candidates.sort((a,b) => fiveElements[b.el] - fiveElements[a.el]);
-  return candidates[0].count = fiveElements[candidates[0].el], candidates[0];
+function buildSupportPhrase(dm, fiveElements){
+  const bigyeopEl = dm;
+  const inseongEl = generatorOf(dm);
+  const pieces = [];
+  if(fiveElements[bigyeopEl] > 0) pieces.push(`너와 같은 ${EN_TO_KR[bigyeopEl]}의 기운`);
+  if(fiveElements[inseongEl] > 0) pieces.push(`너의 기운을 도와주는 ${EN_TO_KR[inseongEl]}의 기운`);
+  if(pieces.length === 0) return null;
+  return `게다가 ${pieces.join('과 ')}도 든든하게 있어서, `;
 }
 
 function buildDiagnosisParagraphV2(a){
@@ -569,7 +570,7 @@ function buildDiagnosisParagraphV2(a){
   const parts = [];
   if(a.type === '균형'){
     const counts = ELEMENTS.map(e => a.fiveElements[e]);
-    const evenRaw = (Math.max(...counts) - Math.min(...counts)) <= 1;
+    const evenRaw = (Math.min(...counts) > 0) && (Math.max(...counts) - Math.min(...counts) <= 2);
     if(evenRaw){
       parts.push(`너의 사주는 오행이 고르게 갖춰진 균형 잡힌 사주야. 다섯 기운이 크게 치우치지 않고 두루 자리 잡고 있어서, 어느 한쪽에 휘둘리기보다 상황에 맞게 균형 잡힌 태도를 보이는 편일 거야.`);
     } else {
@@ -582,11 +583,10 @@ function buildDiagnosisParagraphV2(a){
       parts.push(`다만 완전히 반반은 아니라서, 아주 살짝 흘려보내면 더 좋은 상태야. 너를 상징하는 일주 오행인 ${dmKr}의 기운을 자연스럽게 다스려주는 ${neededKr}의 기운이 조금 더해지면, 지금의 균형이 한층 여유롭게 다듬어질 거야.`);
     }
   } else if(a.type === '신강'){
-    const reason = findSupportReason(dm, a.fiveElements);
-    const reasonKr = EN_TO_KR[reason.el];
+    const supportPhrase = buildSupportPhrase(dm, a.fiveElements);
     parts.push(`너는 ${TRAIT_LABEL[dm]}을 지닌 ${dmKr}의 기운을 타고났단다.`);
-    if(reason.count > 0){
-      parts.push(`게다가 너와 ${reason.rel==='비겁' ? '같은 결의' : '너를 채워주는'} ${reasonKr}의 기운까지 ${reason.verb}, ${INFLUENCE[dm].many}`);
+    if(supportPhrase){
+      parts.push(`${supportPhrase}${INFLUENCE[dm].many}`);
     } else {
       parts.push(INFLUENCE[dm].many);
     }
