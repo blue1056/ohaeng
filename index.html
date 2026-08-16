@@ -112,6 +112,8 @@
     border:1px solid var(--line); background:#FBF7EC;
   }
   .palja-unknown{ color:var(--ink-dim); opacity:.6; border-style:dashed; }
+  .me-tag{ color:var(--accent); font-weight:700; }
+  .palja-char-me{ border-color:var(--accent); border-width:2px; box-shadow:0 0 0 1px var(--accent) inset; }
   .palja-note{
     display:none; font-size:11.5px; color:var(--ink-dim); margin-top:6px;
   }
@@ -306,6 +308,14 @@ const BRANCHES = [
   { kr:'술', hanja:'戌', el:'earth' }, { kr:'해', hanja:'亥', el:'water' },
 ];
 
+// 오행별 중립적인 특성 묘사 (강하다/약하다와 무관하게 "타고났다"고 말할 때 씀)
+const TRAIT_LABEL = {
+  wood:  '풍부한 에너지와 생명력',
+  fire:  '뜨거운 실행력과 풍부한 감정',
+  earth: '묵묵한 끈기와 단단한 고집',
+  metal: '예리한 판단력과 냉철한 이성',
+  water: '지혜롭고 유연한 흐름',
+};
 // 삼신할미 톤 (온화한 반말)
 const TRAIT_DESC = {
   wood:  { many:'너는 풍부한 에너지와 생명력을 지닌 나무의 기운이 아주 강한 사주를 타고났구나.', few:'너는 풍부한 에너지와 생명력을 채워주는 나무의 기운이 조금 부족한 편이란다.' },
@@ -531,19 +541,53 @@ function extractAnalysis(modules, fourPillars){
 }
 
 // 진단 문단 (4~5문장): 강한 오행의 영향 -> (부족한 오행 대비) -> 왜 용신이 필요한지 -> 어떤 변화를 주는지
+// 일주를 빼가거나 누르는 세 관계(식상/재성/관성) 중 개수가 가장 많은 걸 찾아 이유로 삼는다
+function findDrainReason(dm, fiveElements){
+  const candidates = [
+    { rel:'식상', el: generatesOf(dm), verb:'빠져나가서(설기)' },
+    { rel:'재성', el: controlsOf(dm),  verb:'많이 쓰여서(소모)' },
+    { rel:'관성', el: controllerOf(dm), verb:'짓눌려서(극제)' },
+  ];
+  candidates.sort((a,b) => fiveElements[b.el] - fiveElements[a.el]);
+  return candidates[0].count = fiveElements[candidates[0].el], candidates[0];
+}
+// 일주를 도와주는 두 관계(비겁/인성) 중 개수가 가장 많은 걸 찾아 이유로 삼는다
+function findSupportReason(dm, fiveElements){
+  const candidates = [
+    { rel:'비겁', el: dm,               verb:'든든해서' },
+    { rel:'인성', el: generatorOf(dm),  verb:'채워져서' },
+  ];
+  candidates.sort((a,b) => fiveElements[b.el] - fiveElements[a.el]);
+  return candidates[0].count = fiveElements[candidates[0].el], candidates[0];
+}
+
 function buildDiagnosisParagraphV2(a){
   const dm = KR_TO_EN[a.dayMasterKr];
+  const dmKr = a.dayMasterKr;
   const parts = [];
   if(a.type === '균형'){
     parts.push(`너의 사주는 오행이 고르게 갖춰진 균형 잡힌 사주야. 다섯 기운이 크게 치우치지 않고 두루 자리 잡고 있어서, 어느 한쪽에 휘둘리기보다 상황에 맞게 균형 잡힌 태도를 보이는 편일 거야.`);
-    parts.push(`다만 너를 상징하는 일주 오행인 ${a.dayMasterKr}를 든든히 받쳐주는 ${EN_TO_KR[a.needed]}의 기운이 조금 더해지면, 이미 갖춘 균형 위에 힘까지 실려서 하고자 하는 일들이 한결 수월하게 풀릴 거야.`);
+    parts.push(`다만 너를 상징하는 일주 오행인 ${dmKr}를 든든히 받쳐주는 ${EN_TO_KR[a.needed]}의 기운이 조금 더해지면, 이미 갖춘 균형 위에 힘까지 실려서 하고자 하는 일들이 한결 수월하게 풀릴 거야.`);
   } else if(a.type === '신강'){
-    // 진단(일주 자신이 강함)과 조언(일주를 다스리거나 흘려보내는 관계)의 기준을 통일해서 서로 어긋나지 않게 함
-    parts.push(`${TRAIT_DESC[dm].many} ${INFLUENCE[dm].many}`);
+    const reason = findSupportReason(dm, a.fiveElements);
+    const reasonKr = EN_TO_KR[reason.el];
+    parts.push(`너는 ${TRAIT_LABEL[dm]}을 지닌 ${dmKr}의 기운을 타고났단다.`);
+    if(reason.count > 0){
+      parts.push(`게다가 너와 ${reason.rel==='비겁' ? '같은 결의' : '너를 채워주는'} ${reasonKr}의 기운까지 ${reason.verb}, ${INFLUENCE[dm].many}`);
+    } else {
+      parts.push(INFLUENCE[dm].many);
+    }
     parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
   } else {
-    // 신약: 일주 자신이 약함
-    parts.push(`${TRAIT_DESC[dm].few} ${INFLUENCE[dm].few}`);
+    // 신약
+    const reason = findDrainReason(dm, a.fiveElements);
+    const reasonKr = EN_TO_KR[reason.el];
+    parts.push(`너는 ${TRAIT_LABEL[dm]}을 지닌 ${dmKr}의 기운을 타고났단다.`);
+    if(reason.count > 0){
+      parts.push(`그러나 너의 주변에 강한 ${reasonKr}의 기운으로 ${dmKr}의 기운이 ${reason.verb}, ${INFLUENCE[dm].few}`);
+    } else {
+      parts.push(INFLUENCE[dm].few);
+    }
     parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
   }
   parts.push(EFFECT_MAP[a.needed]);
@@ -590,24 +634,25 @@ async function startReading(){
 
 function renderPalja(fourPillars){
   const pillars = [
-    { name:'년주', data:fourPillars.year },
-    { name:'월주', data:fourPillars.month },
-    { name:'일주', data:fourPillars.day },
-    { name:'시주', data:fourPillars.hour },
+    { name:'년주', data:fourPillars.year, isMe:false },
+    { name:'월주', data:fourPillars.month, isMe:false },
+    { name:'일주', data:fourPillars.day, isMe:true },
+    { name:'시주', data:fourPillars.hour, isMe:false },
   ];
   const html = pillars.map(p => {
+    const meClass = p.isMe ? ' palja-col-me' : '';
     if(!p.data){
       return `
-        <div class="palja-col">
-          <div class="pillar-name">${p.name}</div>
+        <div class="palja-col${meClass}">
+          <div class="pillar-name">${p.name}${p.isMe ? ' <span class="me-tag">(나)</span>' : ''}</div>
           <div class="palja-char palja-unknown">―</div>
           <div class="palja-char palja-unknown">―</div>
         </div>`;
     }
     return `
-    <div class="palja-col">
-      <div class="pillar-name">${p.name}</div>
-      <div class="palja-char" style="color:var(--${p.data.stem.el})">${p.data.stem.hanja}</div>
+    <div class="palja-col${meClass}">
+      <div class="pillar-name">${p.name}${p.isMe ? ' <span class="me-tag">(나)</span>' : ''}</div>
+      <div class="palja-char${p.isMe ? ' palja-char-me' : ''}" style="color:var(--${p.data.stem.el})">${p.data.stem.hanja}</div>
       <div class="palja-char" style="color:var(--${p.data.branch.el})">${p.data.branch.hanja}</div>
     </div>`;
   }).join('');
