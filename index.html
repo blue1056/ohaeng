@@ -333,12 +333,29 @@ const INFLUENCE = {
   water: { many:'이 기운이 셀 땐 지혜롭고 융통성 있게 상황에 맞춰 흘러가지만, 너무 과하면 우유부단해지거나 생각이 너무 많아질 수 있단다.', few:'뚝심 있고 한결같은 대신, 가끔은 유연하게 상황에 맞춰가는 융통성이나 여유가 아쉬울 때가 있을 거야.' },
 };
 // 필요한 오행(용신)이 실제로 어떤 변화를 가져다주는지 설명하는 문장
+// boost(생조): 이 오행이 일주를 채워주는 관계(인성/비겁)일 때 - "뿌리내림/자양분" 이미지
+// release(설기): 이 오행이 일주의 기운을 흘려보내는 관계(식상/재성/관성)일 때 - "풀어줌/식혀줌" 이미지
 const EFFECT_MAP = {
-  wood:  '나무의 기운은 굳어있는 것을 부드럽게 뚫고 나가는 힘이 있어서, 꽉 막힌 기운을 유연하게 풀어주고 다시 성장할 자리를 만들어줄 거야.',
-  fire:  '불의 기운은 차갑고 가라앉은 것을 데워서 다시 움직이게 만드는 힘이 있어서, 머뭇거리던 마음에 열정과 실행력을 되찾아줄 거야.',
-  earth: '흙의 기운은 이리저리 흩어진 것들을 다시 그러모아 중심을 잡아주는 힘이 있어서, 흔들리던 마음에 안정감을 되찾아줄 거야.',
-  metal: '쇠의 기운은 무디고 흐트러진 것을 다듬고 정리하는 힘이 있어서, 복잡한 생각을 깔끔하게 정리하고 결단력을 되찾아줄 거야.',
-  water: '물의 기운은 뜨겁게 달아오른 것을 식히고 흐르게 하는 힘이 있어서, 조급했던 마음을 가라앉히고 여유를 되찾아줄 거야.',
+  wood: {
+    boost:   '나무의 기운은 깊게 뿌리내려 든든한 기반을 만들어주는 힘이 있어서, 흔들리던 곳에 단단한 중심과 다시 자라날 원동력을 심어줄 거야.',
+    release: '나무의 기운은 굳어있는 것을 부드럽게 뚫고 나가는 힘이 있어서, 꽉 막힌 기운을 유연하게 풀어주고 다시 성장할 자리를 만들어줄 거야.',
+  },
+  fire: {
+    boost:   '불의 기운은 활활 타오르며 온기와 생명력을 지펴주는 힘이 있어서, 주저하던 마음에 열정과 자신감을 불어넣어줄 거야.',
+    release: '불의 기운은 차갑고 가라앉은 것을 데워서 다시 움직이게 만드는 힘이 있어서, 머뭇거리던 마음에 열정과 실행력을 되찾아줄 거야.',
+  },
+  earth: {
+    boost:   '흙의 기운은 이리저리 흩어진 것들을 다시 그러모아 든든한 터전을 만들어주는 힘이 있어서, 불안정하던 곳에 안정감과 뿌리내릴 자리를 되찾아줄 거야.',
+    release: '흙의 기운은 넘치는 힘을 차분히 가라앉혀 품어주는 힘이 있어서, 들끓던 기운을 진정시키고 차분함을 되찾아줄 거야.',
+  },
+  metal: {
+    boost:   '쇠의 기운은 무디고 흐트러진 것을 다듬고 벼려주는 힘이 있어서, 복잡한 생각을 깔끔하게 정리하고 단단한 결단력을 심어줄 거야.',
+    release: '쇠의 기운은 넘치는 열기를 서늘하게 식혀 다듬어주는 힘이 있어서, 과열된 기운을 정리하고 차분한 균형을 되찾아줄 거야.',
+  },
+  water: {
+    boost:   '물의 기운은 마르지 않는 자양분이 되어 뿌리 깊이 스며드는 힘이 있어서, 흔들리던 기반을 단단히 다지고 다시 성장할 원동력이 되어줄 거야.',
+    release: '물의 기운은 뜨겁게 달아오른 것을 식히고 흐르게 하는 힘이 있어서, 조급했던 마음을 가라앉히고 여유를 되찾아줄 거야.',
+  },
 };
 const TIP_MAP = {
   wood:'오늘 밤엔 숲이 많은 공원을 천천히 걸으며 나무 냄새를 깊게 들이마셔 보렴. 마음이 한결 편안해지고 생기가 돌 거야.',
@@ -392,23 +409,6 @@ function pickMinEl(fiveElements, dm, exclude){
   return pickByPriority(bottom, dm, ['인성','식상','관성','재성']);
 }
 
-// 진단 문단: 강한(또는 부족한) 오행의 영향 -> 왜 용신이 필요한지 -> 그 기운이 어떤 변화를 주는지, 4~5문장 구성
-function buildDiagnosisParagraph(result, fiveElements, dayMasterKr){
-  const dm = KR_TO_EN[dayMasterKr];
-  if(result.type === '균형'){
-    const neededKr = EN_TO_KR[result.needed];
-    return `너의 사주는 오행이 고르게 갖춰진 균형 잡힌 사주야. 다섯 기운이 크게 치우치지 않고 두루 자리 잡고 있어서, 어느 한쪽에 휘둘리기보다 상황에 맞게 균형 잡힌 태도를 보이는 편일 거야. 다만 너를 상징하는 일주 오행인 ${dayMasterKr}를 든든히 받쳐주는 ${neededKr}의 기운이 조금 더해지면, 이미 갖춘 균형 위에 힘까지 실려서 하고자 하는 일들이 한결 수월하게 풀릴 거야. ${EFFECT_MAP[result.needed]}`;
-  }
-  if(result.type === '신강'){
-    const abundantEl = result.traitElement;
-    const neededEl = result.needed; // 결과 카드와 반드시 같은 오행 (그 오행을 다스리는/상극 오행)
-    return `${TRAIT_DESC[abundantEl].many} ${INFLUENCE[abundantEl].many} 이렇게 강한 기운은 잘 쓰면 큰 힘이 되지만, 한쪽으로 치우친 채 그대로 두면 오히려 발목을 잡을 수 있어서 다스려주는 기운이 필요해. 그래서 ${EN_TO_KR[abundantEl]} 기운을 다스려줄 ${EN_TO_KR[neededEl]}의 기운이 지금 너에게 절실하단다. ${EFFECT_MAP[neededEl]}`;
-  }
-  // 신약
-  const deficientEl = result.needed;
-  const abundantEl = pickMaxEl(fiveElements, dm, deficientEl);
-  return `${TRAIT_DESC[abundantEl].many} ${INFLUENCE[abundantEl].many} 반면에 ${TRAIT_DESC[deficientEl].few} 그래서 지금 너에게는 ${EN_TO_KR[deficientEl]}의 기운을 채우는 게 중요해. ${EFFECT_MAP[deficientEl]}`;
-}
 // 일주(dm) 기준으로 needed 오행이 어떤 관계인지 판별
 function relationBetween(needed, dm){
   if(needed === dm) return '비겁';
@@ -564,6 +564,8 @@ function findSupportReason(dm, fiveElements){
 function buildDiagnosisParagraphV2(a){
   const dm = KR_TO_EN[a.dayMasterKr];
   const dmKr = a.dayMasterKr;
+  const relation = relationBetween(a.needed, dm);
+  const isBoost = (relation === '인성' || relation === '비겁'); // 생조(채워줌) vs 설기(흘려보냄)
   const parts = [];
   if(a.type === '균형'){
     const counts = ELEMENTS.map(e => a.fiveElements[e]);
@@ -573,9 +575,8 @@ function buildDiagnosisParagraphV2(a){
     } else {
       parts.push(`너의 사주는 오행 개수만 보면 한쪽으로 쏠려 보여도, 일주(나) 자신의 힘은 세력 간에 균형이 잘 잡혀 있는 사주야. 도와주는 기운과 빼가는 기운이 적당히 맞물려 있어서, 겉보기와 달리 안정적으로 힘을 쓰는 편일 거야.`);
     }
-    const relation = relationBetween(a.needed, dm);
     const neededKr = EN_TO_KR[a.needed];
-    if(relation === '인성' || relation === '비겁'){
+    if(isBoost){
       parts.push(`다만 완전히 반반은 아니라서, 아주 살짝 더 채워주면 좋은 상태야. 너를 상징하는 일주 오행인 ${dmKr}를 든든히 받쳐주는 ${neededKr}의 기운이 조금 더해지면, 지금의 균형 위에 힘까지 실려서 하고자 하는 일들이 한결 수월하게 풀릴 거야.`);
     } else {
       parts.push(`다만 완전히 반반은 아니라서, 아주 살짝 흘려보내면 더 좋은 상태야. 너를 상징하는 일주 오행인 ${dmKr}의 기운을 자연스럽게 다스려주는 ${neededKr}의 기운이 조금 더해지면, 지금의 균형이 한층 여유롭게 다듬어질 거야.`);
@@ -602,7 +603,7 @@ function buildDiagnosisParagraphV2(a){
     }
     parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
   }
-  parts.push(EFFECT_MAP[a.needed]);
+  parts.push(EFFECT_MAP[a.needed][isBoost ? 'boost' : 'release']);
   return parts.join(' ');
 }
 
