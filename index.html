@@ -532,12 +532,20 @@ function extractAnalysis(modules, fourPillars){
 
 // 진단 문단 (4~5문장): 강한 오행의 영향 -> (부족한 오행 대비) -> 왜 용신이 필요한지 -> 어떤 변화를 주는지
 function buildDiagnosisParagraphV2(a){
+  const dm = KR_TO_EN[a.dayMasterKr];
   const parts = [];
-  parts.push(`${TRAIT_DESC[a.traitElement].many} ${INFLUENCE[a.traitElement].many}`);
-  if(a.lackingElement && a.lackingElement !== a.traitElement){
-    parts.push(`반면에 ${TRAIT_DESC[a.lackingElement].few}`);
+  if(a.type === '균형'){
+    parts.push(`너의 사주는 오행이 고르게 갖춰진 균형 잡힌 사주야. 다섯 기운이 크게 치우치지 않고 두루 자리 잡고 있어서, 어느 한쪽에 휘둘리기보다 상황에 맞게 균형 잡힌 태도를 보이는 편일 거야.`);
+    parts.push(`다만 너를 상징하는 일주 오행인 ${a.dayMasterKr}를 든든히 받쳐주는 ${EN_TO_KR[a.needed]}의 기운이 조금 더해지면, 이미 갖춘 균형 위에 힘까지 실려서 하고자 하는 일들이 한결 수월하게 풀릴 거야.`);
+  } else if(a.type === '신강'){
+    // 진단(일주 자신이 강함)과 조언(일주를 다스리거나 흘려보내는 관계)의 기준을 통일해서 서로 어긋나지 않게 함
+    parts.push(`${TRAIT_DESC[dm].many} ${INFLUENCE[dm].many}`);
+    parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
+  } else {
+    // 신약: 일주 자신이 약함
+    parts.push(`${TRAIT_DESC[dm].few} ${INFLUENCE[dm].few}`);
+    parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
   }
-  parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
   parts.push(EFFECT_MAP[a.needed]);
   return parts.join(' ');
 }
