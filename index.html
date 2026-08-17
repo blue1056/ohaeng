@@ -223,13 +223,13 @@
 
     <p class="trait-msg" id="trait-msg"></p>
 
-    <h2 class="need-label">당신의 기운을 채워야 할 오행</h2>
+    <h2 class="need-label">당신의 기운을 채워야 할 오행 (용신用神)</h2>
 
     <div class="result-card" id="result-card">
       <img id="result-el-img" src="" alt="" class="result-el-img">
       <div class="result-tip" id="result-tip"></div>
     </div>
-    <div class="method-note">오행의 균형뿐만 아니라, 나의 일주 오행이 강한지 약한지를 따져 기운을 흘려보내거나 도와주는 내게 가장 필요한 오행의 기운을 추천드렸습니다 :-)</div>
+    <div class="method-note">단순히 오행의 갯수만 아니라, 나의 일주 오행이 강한지 약한지를 따져<br>기운을 흘려보내거나 도와주는 네게 가장 필요한 오행의 기운을 추천했단다.</div>
 
     <div class="socials">
       <a class="social-link" href="https://instagram.com/gatmoru.brewery" target="_blank" rel="noopener">
@@ -537,7 +537,18 @@ function extractAnalysis(modules, fourPillars){
     needed = generatorOf(dm);
   }
 
-  return { type, traitElement, lackingElement, needed, dayMasterKr, fiveElements };
+  // 6) 조후(계절성) 판정: Pro의 johu.oheng이 있고, 최종 용신(억부)과 다를 때만
+  // 조후가 결정적인 역할을 한 거로 보고 진단에 한 문장 추가한다
+  let isJohuCase = false;
+  let johuElement = null;
+  if(modules.yongsin && modules.yongsin.johu && modules.yongsin.johu.oheng){
+    johuElement = modules.yongsin.johu.oheng;
+    if(johuElement !== needed){
+      isJohuCase = true;
+    }
+  }
+
+  return { type, traitElement, lackingElement, needed, dayMasterKr, fiveElements, isJohuCase, johuElement };
 }
 
 // 진단 문단 (4~5문장): 강한 오행의 영향 -> (부족한 오행 대비) -> 왜 용신이 필요한지 -> 어떤 변화를 주는지
@@ -604,6 +615,10 @@ function buildDiagnosisParagraphV2(a){
     parts.push(`그래서 지금 너에게는 ${EN_TO_KR[a.needed]}의 기운이 필요해.`);
   }
   parts.push(EFFECT_MAP[a.needed][isBoost ? 'boost' : 'release']);
+  if(a.isJohuCase && a.johuElement){
+    const johuKr = EN_TO_KR[a.johuElement];
+    parts.push(`참고로, 태어난 계절의 기운까지 함께 고려하면 ${johuKr}의 기운도 은근히 도움이 될 수 있어.`);
+  }
   return parts.join(' ');
 }
 
